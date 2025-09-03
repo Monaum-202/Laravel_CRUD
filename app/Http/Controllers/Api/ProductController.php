@@ -21,30 +21,77 @@ class ProductController extends Controller
     }
 
     public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $product = Product::create($validator->validated());
+
         return response()->json([
-            'message' => 'Validation failed',
-            'errors' => $validator->errors()
-        ], 422);
+            'message' => 'Product Created Successfully',
+            'data' => new ProductResource($product),
+            'success' => true
+        ], 201);
     }
 
-    $product = Product::create($validator->validated());
+    public function show($id)
+    {
+        $product = Product::find($id);
+        if ($product) {
+            return new ProductResource($product);
+        } else {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+    }
 
-    return response()->json([
-        'message' => 'Product Created Successfully',
-        'data' => new ProductResource($product)
-    ], 201);
-}
+    public function update(Request $request, $id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
 
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'sometimes|required|numeric',
+        ]);
 
-    public function update() {}
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-    public function distroy() {}
+        $product->update($validator->validated());
+
+        return response()->json([
+            'message' => 'Product Updated Successfully',
+            'data' => new ProductResource($product),
+            'success' => true
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        $product->delete();
+
+        return response()->json(['message' => 'Product Deleted Successfully'], 200);
+    }
 }
