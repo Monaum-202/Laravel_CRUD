@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ProductDetail;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductResource extends JsonResource
@@ -22,6 +23,13 @@ class ProductResource extends JsonResource
             'price' => $this->price,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            
+            // Use ::make for single related model
+            'detail'      => ProductDetailResource::make($this->whenLoaded('detail')),
+
+            // Use ::collection for hasMany
+            'reviews'     => ReviewResource::collection($this->whenLoaded('reviews')),
+
         ];
     }
 }

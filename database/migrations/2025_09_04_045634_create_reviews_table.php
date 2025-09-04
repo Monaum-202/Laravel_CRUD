@@ -13,24 +13,27 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->mediumText('description')->nullable();
-            $table->decimal('price', 8, 2);
-            $table->string('image')->nullable();
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->string('reviewer_name');
+            $table->text('comment');
+            $table->integer('rating');
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
+        
         });
     }
 
-    public function down(): void
+
+
+    public function down()
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('reviews');
         Schema::table('products', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
             $table->dropForeign(['updated_by']);
